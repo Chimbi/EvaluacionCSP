@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>InteroExpos Lab — Modulación Interoceptiva Háptica en Exposición</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header class="app-header">
+    <div class="brand-title">
+      <div>
+        <h1>InteroExpos Lab</h1>
+        <div class="brand-subtitle">Psicología Traslacional • Biofeedback Cardíaco Háptico (BLE 0x180D)</div>
+      </div>
+    </div>
+    <div class="status-pills">
+      <span id="bleStatusPill" class="pill">
+        <span id="bleDot" class="dot"></span>
+        <span id="bleStatusText">Banda Desconectada</span>
+      </span>
+      <span id="hapticStatusPill" class="pill">
+        Vibración: <strong id="hapticStatusText">Inactiva</strong>
+      </span>
+      <span id="recStatusPill" class="pill">
+        <span id="recStatusText">00:00</span>
+      </span>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- CARD 1: Bluetooth Connection & Live Telemetry -->
+    <section class="card">
+      <div class="card-header">
+        <h2><span class="badge-step">1</span> Sensor Cardíaco BLE y Telemetría en Vivo</h2>
+        <button id="btnBlindMode" class="btn btn-outline" style="padding: 5px 10px; font-size: 0.75rem;">
+          Modo Pantalla Ciega (Participante)
+        </button>
+      </div>
+
+      <div class="telemetry-grid">
+        <div class="metric-box">
+          <div class="metric-label">FC Real (Banda)</div>
+          <div class="metric-value" style="color: #f87171;">
+            <span id="valHR">--</span> <span class="metric-unit">BPM</span>
+          </div>
+          <div class="metric-sub" id="valDeltaLB">Δ Línea Base: --</div>
+        </div>
+
+        <div class="metric-box">
+          <div class="metric-label">Intervalo R-R / VFC</div>
+          <div class="metric-value" style="color: #38bdf8;">
+            <span id="valRR">--</span> <span class="metric-unit">ms</span>
+          </div>
+          <div class="metric-sub" id="valRMSSD">RMSSD: -- ms</div>
+        </div>
+
+        <div class="metric-box">
+          <div class="metric-label">Dinámica (10s)</div>
+          <div class="metric-value" style="color: #fbbf24; font-size: 1.25rem; padding-top: 6px;">
+            <span id="valSlope">0.0</span> <span class="metric-unit">BPM/10s</span>
+          </div>
+          <div class="metric-sub" id="valDynamicState">En espera</div>
+        </div>
+
+        <div class="metric-box">
+          <div class="metric-label">Pulso Háptico</div>
+          <div class="metric-value" style="color: #a855f7;">
+            <span id="valHapticBPM">0</span> <span class="metric-unit">BPM</span>
+          </div>
+          <div class="metric-sub" id="valHapticPattern">Motor apagado</div>
+        </div>
+      </div>
+
+      <canvas id="hrChart" width="600" height="170"></canvas>
+
+      <div class="btn-row">
+        <button id="btnConnectBLE" class="btn btn-primary">
+          Conectar Banda Bluetooth (0x180D)
+        </button>
+        <button id="btnToggleSim" class="btn btn-amber">
+          Iniciar Simulador Fisiológico
+        </button>
+        <button id="btnTestVibrate" class="btn btn-outline">
+          Probar Vibración
+        </button>
+      </div>
+
+      <!-- Simulator Profile Selector (visible when simulator runs) -->
+      <div id="simControls" style="display: none; margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border-color);">
+        <div class="form-group">
+          <label>Estado Fisiológico del Simulador (para pruebas en seco):</label>
+          <select id="simStateSelect">
+            <option value="REST">Reposo / Línea Base (~72 BPM, alta VFC)</option>
+            <option value="ANTICIPATION">Anticipación Pre-Exposición (~88 BPM)</option>
+            <option value="EXPOSURE_PEAK">Contacto Inicial Estímulo Fóbico / Pico (~114 BPM)</option>
+            <option value="RELIEF_DECEL">Fase de Desaceleración / Alivio Autonómico (114 → 78 BPM)</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- CARD 2: Experimental Condition & Haptic Parameters -->
+    <section class="card">
+      <div class="card-header">
+        <h2><span class="badge-step">2</span> Diseño Experimental y Motor Háptico</h2>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="inputSubjectId">ID Participante</label>
+          <input type="text" id="inputSubjectId" value="SUB_001" placeholder="Ej. SUB_001" />
+        </div>
+        <div class="form-group">
+          <label for="selectExperiment">Experimento de la Serie</label>
+          <select id="selectExperiment">
+            <option value="EXP1_MODES">Exp 1: Continuo vs. Umbral/Alivio vs. Controles</option>
+            <option value="EXP2_MANIPULATION">Exp 2: Manipulación de Frecuencia (Verídico vs ±%)</option>
+            <option value="EXP3_RENEWAL">Exp 3: Transferencia y Renovación Contextual</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="selectPhobia">Miedo Específico (Muestra Subclínica)</label>
+          <select id="selectPhobia">
+            <option value="SPIDERS">Arañas / Insectos (FSQ)</option>
+            <option value="HEIGHTS">Alturas / Acrofobia (AQ)</option>
+            <option value="BLOOD">Sangre / Inyecciones (MBI)</option>
+            <option value="SOCIAL">Hablar en Público / Social (LSAS)</option>
+            <option value="OTHER">Otro estímulo condicionado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="inputASI3">Puntaje ASI-3 (Físico) / MAIA-2</label>
+          <input type="text" id="inputASI3" placeholder="Ej. ASI3=16; MAIA=3.2" />
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 12px;">
+        <label for="selectCondition"><strong>Condición Experimental de Feedback Háptico (Inéditas):</strong></label>
+        <select id="selectCondition">
+          <option value="CONTINUOUS">Exp 1 — Condición Bifásica/Continua: Pulso Sincronizado Latido a Latido (1:1)</option>
+          <option value="THRESHOLD_BOTH">Exp 1 — Condición Transición Dinámica: Umbral (+% LB) + Doble Pulso en Derivada de Alivio</option>
+          <option value="RELIEF_ONLY">Exp 1 — Condición Bloqueada al Alivio (Relief-Locked): Solo vibra en pendiente negativa (dFC/dt ≤ umbral)</option>
+          <option value="THRESHOLD_ALERT_ONLY">Exp 1 — Condición Bloqueada al Pico (Arousal-Locked): Solo vibra sobre umbral +% LB</option>
+          <option value="SLOPE_GAIN">Exp 2 — Perturbación de Ganancia de Pendiente (γ): Pico real + desaceleración modulada por γ</option>
+          <option value="ADAPTIVE_FADING">Exp 3 — Desvanecimiento Háptico Adaptativo (B1 100% → B5 15%): Previene dependencia de señal de seguridad</option>
+          <option value="SHAM">Control Activo Sham / Yoked: Ritmo basal sinusoidal desacoplado de la reactividad real</option>
+          <option value="NONE">Control Exposición Estándar: Sin vibración (solo registro psicofisiológico BLE)</option>
+        </select>
+      </div>
+
+      <div class="form-grid" style="margin-top: 12px;">
+        <div class="form-group">
+          <label for="inputThresholdPct">Umbral Activación sobre LB (%)</label>
+          <input type="number" id="inputThresholdPct" value="15" min="3" max="60" step="1" />
+        </div>
+        <div class="form-group">
+          <label for="inputReliefSlope">Derivada Alivio (ΔBPM/10s ≤)</label>
+          <input type="number" id="inputReliefSlope" value="-2.5" min="-15" max="-0.5" step="0.5" />
+        </div>
+        <div class="form-group">
+          <label for="inputMultiplierK">Ganancia Pendiente γ (Exp 2: 0.35 lento, 1.75 rápido)</label>
+          <input type="number" id="inputMultiplierK" value="1.00" min="0.20" max="2.50" step="0.05" />
+        </div>
+        <div class="form-group">
+          <label for="inputPulseMs">Duración Pulso Base (ms)</label>
+          <input type="number" id="inputPulseMs" value="55" min="20" max="150" step="5" />
+        </div>
+      </div>
+
+      <div class="helper-box" id="conditionHelperText">
+        <strong>Modo 1 (Continuo 1:1):</strong> El teléfono emite un pulso táctil sincronizado con cada latido real, permitiendo percibir tanto la cardioaceleración (violación de expectativa) como la desaceleración progresiva (alivio).
+      </div>
+    </section>
+
+    <!-- CARD 3: Baseline Calibration & Schandry Interoceptive Accuracy Task -->
+    <section class="card">
+      <div class="card-header">
+        <h2><span class="badge-step">3</span> Línea Base y Tarea de Precisión Interoceptiva (Schandry)</h2>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="inputBaselineHR">FC Línea Base Fijada (BPM)</label>
+          <input type="number" id="inputBaselineHR" value="72" min="40" max="140" />
+        </div>
+        <div class="form-group">
+          <label>Acción de Calibración</label>
+          <button id="btnCaptureBaseline" class="btn btn-success" style="width: 100%;">
+            Fijar FC Actual como Línea Base
+          </button>
+        </div>
+      </div>
+
+      <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+        <div style="font-size: 0.84rem; font-weight: 600; margin-bottom: 8px; color: #cbd5e1;">
+          Tarea de Conteo de Latidos (Heartbeat Counting Task - Moderador Basal)
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="selectSchandrySec">Ventana de Conteo (s)</label>
+            <select id="selectSchandrySec">
+              <option value="25">Ensayo 1: 25 segundos</option>
+              <option value="35">Ensayo 2: 35 segundos</option>
+              <option value="45">Ensayo 3: 45 segundos</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="inputCountedBeats">Latidos Reportados por Sujeto</label>
+            <input type="number" id="inputCountedBeats" placeholder="Ej. 28" />
+          </div>
+        </div>
+        <div class="btn-row">
+          <button id="btnStartSchandry" class="btn btn-outline">
+            Iniciar Ventana de Conteo (Silenciosa)
+          </button>
+          <button id="btnCalcSchandry" class="btn btn-primary">
+            Calcular Precisión Interoceptiva (I_acc)
+          </button>
+        </div>
+        <div class="helper-box" id="schandryResultBox" style="margin-top: 8px;">
+          Latidos reales en ventana: <strong id="lblRealBeats">--</strong> | Índice Precisión Interoceptiva (I_acc): <strong id="lblIaccScore">--</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- CARD 4: Session Phases & Expectancy Violation / Relief Capture -->
+    <section class="card">
+      <div class="card-header">
+        <h2><span class="badge-step">4</span> Control de Fases de Exposición y Violación de Expectativas</h2>
+      </div>
+
+      <div class="btn-row" style="margin-top: 0; margin-bottom: 12px;">
+        <button id="btnStartRec" class="btn btn-success">
+          Iniciar Registro Experimental
+        </button>
+        <button id="btnMarkStimulusOn" class="btn btn-amber">
+          Marcar: Contacto Estímulo
+        </button>
+        <button id="btnMarkStimulusOff" class="btn btn-outline">
+          Marcar: Fin Contacto
+        </button>
+      </div>
+
+      <label style="font-size: 0.78rem; color: var(--text-muted);">Fase Activa del Protocolo (clic para cambiar de fase):</label>
+      <div class="phase-buttons" id="phaseButtonsContainer">
+        <button class="phase-btn active" data-phase="BASELINE">1. Línea Base</button>
+        <button class="phase-btn" data-phase="PRE_EXP">2. Pre-Exposición</button>
+        <button class="phase-btn" data-phase="EXP_B1">3. Exposición B1</button>
+        <button class="phase-btn" data-phase="EXP_B2">4. Exposición B2</button>
+        <button class="phase-btn" data-phase="EXP_B3">5. Exposición B3</button>
+        <button class="phase-btn" data-phase="EXP_B4">6. Exposición B4</button>
+        <button class="phase-btn" data-phase="EXP_B5">7. Exposición B5</button>
+        <button class="phase-btn" data-phase="RECOVERY">8. Recuperación</button>
+        <button class="phase-btn" data-phase="RETENTION_NO_FB">9. Test Sin Feedback</button>
+      </div>
+
+      <!-- Trial Rating Form -->
+      <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+        <div style="font-size: 0.84rem; font-weight: 600; margin-bottom: 8px; color: var(--accent-blue);">
+          Evaluación al Cierre del Bloque / Fase Actual:
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="inputExpectancy">Expectativa Peligro (0-100%)</label>
+            <input type="number" id="inputExpectancy" value="75" min="0" max="100" />
+          </div>
+          <div class="form-group">
+            <label for="inputSUDS">Miedo Subjetivo SUDS (0-100)</label>
+            <input type="number" id="inputSUDS" value="70" min="0" max="100" />
+          </div>
+          <div class="form-group">
+            <label for="inputRelief">Alivio / Seguridad (0-100)</label>
+            <input type="number" id="inputRelief" value="40" min="0" max="100" />
+          </div>
+          <div class="form-group">
+            <label for="inputPerceivedHR">FC Percibida por Sujeto (BPM)</label>
+            <input type="number" id="inputPerceivedHR" value="110" min="40" max="220" />
+          </div>
+        </div>
+        <div class="btn-row">
+          <button id="btnSaveBlockRating" class="btn btn-primary" style="width: 100%;">
+            Guardar Evaluación del Bloque Actual
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CARD 5: Summary Log & CSV Data Export -->
+    <section class="card full-width">
+      <div class="card-header">
+        <h2><span class="badge-step">5</span> Bitácora de Ensayos y Exportación de Base de Datos (CSV)</h2>
+        <div class="btn-row" style="margin-top: 0;">
+          <button id="btnExportTimeseries" class="btn btn-success">
+            Descargar Serie Temporal (.CSV)
+          </button>
+          <button id="btnExportTrials" class="btn btn-primary">
+            Descargar Resumen de Bloques (.CSV)
+          </button>
+          <button id="btnClearData" class="btn btn-danger">
+            Reiniciar Sesión
+          </button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="log-table">
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>Fase / Bloque</th>
+              <th>Condición</th>
+              <th>FC Media</th>
+              <th>FC Pico</th>
+              <th>RMSSD (ms)</th>
+              <th>FC Percibida (Error Δ)</th>
+              <th>Expectativa (%)</th>
+              <th>SUDS (0-100)</th>
+              <th>Alivio (0-100)</th>
+              <th>Pendiente 10s</th>
+            </tr>
+          </thead>
+          <tbody id="trialsTableBody">
+            <tr>
+              <td colspan="11" style="text-align: center; color: var(--text-muted);">
+                Aún no se han guardado bloques en esta sesión.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Blind Mode Overlay (for Participant holding the phone during exposure) -->
+  <div id="blindOverlay" class="blind-overlay">
+    <div id="blindPulseCircle" class="blind-circle">
+      <span style="font-size: 0.8rem; color: #475569;">Modo Ciego</span>
+    </div>
+    <h3 style="color: #94a3b8; font-weight: 600; margin-bottom: 8px;">Sesión Experimental en Curso</h3>
+    <p style="color: #64748b; font-size: 0.85rem; max-width: 320px; margin-bottom: 28px;">
+      Mantenga su atención en la tarea de exposición. La pantalla permanece oscurecida para evitar distractores visuales.
+    </p>
+    <button id="btnExitBlindMode" class="btn btn-outline">
+      Desbloquear Consola del Investigador
+    </button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

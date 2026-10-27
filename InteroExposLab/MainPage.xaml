@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="InteroExposLab.MainPage"
+             Title="InteroExpos Lab — Microsoft .NET MAUI"
+             BackgroundColor="#0B0F19">
+
+    <Grid>
+        <ScrollView Padding="16">
+            <VerticalStackLayout Spacing="14">
+
+                <!-- 1. Telemetría en Tiempo Real y Banda BLE -->
+                <Frame BackgroundColor="#131B2E" BorderColor="#263457" CornerRadius="12" Padding="14">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="1. Sensor Cardíaco BLE (0x180D) y Telemetría"
+                               TextColor="#38BDF8" FontAttributes="Bold" FontSize="16" />
+
+                        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                            <Frame Grid.Column="0" BackgroundColor="#19233C" Padding="8" CornerRadius="8">
+                                <VerticalStackLayout HorizontalOptions="Center">
+                                    <Label Text="FC REAL" TextColor="#94A3B8" FontSize="11" HorizontalOptions="Center" />
+                                    <Label x:Name="LblHr" Text="--" TextColor="#F87171" FontSize="22" FontAttributes="Bold" HorizontalOptions="Center" />
+                                    <Label x:Name="LblDeltaLb" Text="Δ LB: --" TextColor="#94A3B8" FontSize="10" HorizontalOptions="Center" />
+                                </VerticalStackLayout>
+                            </Frame>
+
+                            <Frame Grid.Column="1" BackgroundColor="#19233C" Padding="8" CornerRadius="8">
+                                <VerticalStackLayout HorizontalOptions="Center">
+                                    <Label Text="R-R / VFC" TextColor="#94A3B8" FontSize="11" HorizontalOptions="Center" />
+                                    <Label x:Name="LblRr" Text="--" TextColor="#38BDF8" FontSize="22" FontAttributes="Bold" HorizontalOptions="Center" />
+                                    <Label x:Name="LblRmssd" Text="RMSSD: --" TextColor="#94A3B8" FontSize="10" HorizontalOptions="Center" />
+                                </VerticalStackLayout>
+                            </Frame>
+
+                            <Frame Grid.Column="2" BackgroundColor="#19233C" Padding="8" CornerRadius="8">
+                                <VerticalStackLayout HorizontalOptions="Center">
+                                    <Label Text="dFC/dt (10s)" TextColor="#94A3B8" FontSize="11" HorizontalOptions="Center" />
+                                    <Label x:Name="LblSlope" Text="0.0" TextColor="#FBBF24" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" />
+                                    <Label x:Name="LblState" Text="En espera" TextColor="#94A3B8" FontSize="10" HorizontalOptions="Center" />
+                                </VerticalStackLayout>
+                            </Frame>
+
+                            <Frame Grid.Column="3" BackgroundColor="#19233C" Padding="8" CornerRadius="8">
+                                <VerticalStackLayout HorizontalOptions="Center">
+                                    <Label Text="HÁPTICO" TextColor="#94A3B8" FontSize="11" HorizontalOptions="Center" />
+                                    <Label x:Name="LblHapticBpm" Text="0" TextColor="#A855F7" FontSize="22" FontAttributes="Bold" HorizontalOptions="Center" />
+                                    <Label x:Name="LblHapticPattern" Text="Inactivo" TextColor="#94A3B8" FontSize="10" HorizontalOptions="Center" />
+                                </VerticalStackLayout>
+                            </Frame>
+                        </Grid>
+
+                        <HorizontalStackLayout Spacing="8">
+                            <Button x:Name="BtnConnectBle" Text="Conectar Banda BLE" Clicked="OnConnectBleClicked" BackgroundColor="#6366F1" TextColor="White" />
+                            <Button x:Name="BtnSimulate" Text="Simulador C#" Clicked="OnToggleSimulatorClicked" BackgroundColor="#F59E0B" TextColor="#0B0F19" />
+                            <Button Text="Modo Ciego" Clicked="OnEnterBlindModeClicked" BackgroundColor="#19233C" TextColor="White" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 2. Diseño Experimental y Condición Háptica -->
+                <Frame BackgroundColor="#131B2E" BorderColor="#263457" CornerRadius="12" Padding="14">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="2. Condición Experimental y Parámetros Hápticos"
+                               TextColor="#38BDF8" FontAttributes="Bold" FontSize="16" />
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <VerticalStackLayout Grid.Column="0">
+                                <Label Text="ID Participante" TextColor="#94A3B8" FontSize="12" />
+                                <Entry x:Name="EntrySubjectId" Text="SUB_001" TextColor="White" BackgroundColor="#090D16" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1">
+                                <Label Text="FC Línea Base (BPM)" TextColor="#94A3B8" FontSize="12" />
+                                <Entry x:Name="EntryBaselineHr" Text="72" Keyboard="Numeric" TextColor="White" BackgroundColor="#090D16" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Label Text="Condición Experimental (Experimentos 1, 2 y 3):" TextColor="#94A3B8" FontSize="12" />
+                        <Picker x:Name="PickerCondition" SelectedIndexChanged="OnConditionChanged" TextColor="White" BackgroundColor="#090D16">
+                            <Picker.Items>
+                                <x:String>Continuous1To1</x:String>
+                                <x:String>DynamicThresholdAndRelief</x:String>
+                                <x:String>ReliefDerivativeLocked</x:String>
+                                <x:String>ArousalPeakLocked</x:String>
+                                <x:String>SlopeGainPerturbation</x:String>
+                                <x:String>AdaptiveHapticFading</x:String>
+                                <x:String>ShamYokedControl</x:String>
+                                <x:String>NoFeedbackControl</x:String>
+                            </Picker.Items>
+                        </Picker>
+
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                            <VerticalStackLayout Grid.Column="0">
+                                <Label Text="Umbral +% LB" TextColor="#94A3B8" FontSize="11" />
+                                <Entry x:Name="EntryThresholdPct" Text="15" Keyboard="Numeric" TextColor="White" BackgroundColor="#090D16" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1">
+                                <Label Text="Alivio dFC/dt &lt;=" TextColor="#94A3B8" FontSize="11" />
+                                <Entry x:Name="EntryReliefSlope" Text="-2.5" Keyboard="Numeric" TextColor="White" BackgroundColor="#090D16" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="2">
+                                <Label Text="Ganancia γ (Exp 2)" TextColor="#94A3B8" FontSize="11" />
+                                <Entry x:Name="EntryGamma" Text="1.0" Keyboard="Numeric" TextColor="White" BackgroundColor="#090D16" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 3. Fases y Evaluación de Violación de Expectativas / Alivio -->
+                <Frame BackgroundColor="#131B2E" BorderColor="#263457" CornerRadius="12" Padding="14">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="3. Fases de Exposición y Registro de Bloque"
+                               TextColor="#38BDF8" FontAttributes="Bold" FontSize="16" />
+
+                        <HorizontalStackLayout Spacing="8">
+                            <Button x:Name="BtnRecord" Text="Iniciar Grabación" Clicked="OnToggleRecordingClicked" BackgroundColor="#10B981" TextColor="White" />
+                            <Picker x:Name="PickerPhase" SelectedIndexChanged="OnPhaseChanged" Title="Fase Activa" TextColor="White" BackgroundColor="#090D16" WidthRequest="190">
+                                <Picker.Items>
+                                    <x:String>BASELINE</x:String>
+                                    <x:String>PRE_EXP</x:String>
+                                    <x:String>EXP_B1</x:String>
+                                    <x:String>EXP_B2</x:String>
+                                    <x:String>EXP_B3</x:String>
+                                    <x:String>EXP_B4</x:String>
+                                    <x:String>EXP_B5</x:String>
+                                    <x:String>RECOVERY</x:String>
+                                    <x:String>RETENTION_NO_FB</x:String>
+                                </Picker.Items>
+                            </Picker>
+                        </HorizontalStackLayout>
+
+                        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                            <VerticalStackLayout Grid.Column="0">
+                                <Label Text="Expectativa %" TextColor="#94A3B8" FontSize="11" />
+                                <Entry x:Name="EntryExpectancy" Text="75" Keyboard="Numeric" TextColor="White" BackgroundColor="#090D16" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1">
+                                <Label Text="SUDS (0-100)" TextColor="#94A3B8" FontSize="11" />
+                                <Entry x:Name="EntrySuds" Text="70" Keyboard="Numeric" TextColor="White" BackgroundColor="#090D16" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="2">
+                                <Label Text="Alivio (0-100)" TextColor="#94A3B8" FontSize="11" />
+                                <Entry x:Name="EntryRelief" Text="40" Keyboard="Numeric" TextColor="White" BackgroundColor="#090D16" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="3">
+                                <Label Text="FC Percibida" TextColor="#94A3B8" FontSize="11" />
+                                <Entry x:Name="EntryPerceivedHr" Text="110" Keyboard="Numeric" TextColor="White" BackgroundColor="#090D16" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Button Text="Guardar Bloque Actual" Clicked="OnSaveBlockClicked" BackgroundColor="#6366F1" TextColor="White" />
+
+                        <HorizontalStackLayout Spacing="8">
+                            <Button Text="Exportar Serie Temporal (Excel/OneDrive)" Clicked="OnExportTimeseriesClicked" BackgroundColor="#10B981" TextColor="White" />
+                            <Button Text="Exportar Bloques (Excel/OneDrive)" Clicked="OnExportBlocksClicked" BackgroundColor="#19233C" TextColor="White" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Frame>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Pantalla Ciega para Participante -->
+        <Grid x:Name="BlindOverlay" IsVisible="False" BackgroundColor="#020409" Padding="24">
+            <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="18">
+                <Label Text="Sesión Experimental en Curso" TextColor="#94A3B8" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" />
+                <Label Text="Mantenga su atención en la tarea de exposición. La pantalla permanece oscurecida para evitar distractores visuales."
+                       TextColor="#64748B" FontSize="14" HorizontalTextAlignment="Center" WidthRequest="300" />
+                <Button Text="Desbloquear Consola del Investigador" Clicked="OnExitBlindModeClicked" BackgroundColor="#19233C" TextColor="White" />
+            </VerticalStackLayout>
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,10 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["*.{css,js,json,png,ico}"]
+  },
+  "globalHeaders": {
+    "Permissions-Policy": "bluetooth=(self), vibrate=(self), screen-wake-lock=(self)",
+    "Cache-Control": "no-cache"
+  }
+}

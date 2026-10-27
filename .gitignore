@@ -1,0 +1,36 @@
+# Secretos, claves privadas y certificados (NUNCA SUBIR)
+*.key
+*.pem
+*.pfx
+*.p12
+*.cer
+*.crt
+*.jks
+*.keystore
+.env
+.env.*
+*secret*
+*credentials*
+*token*
+appsettings.Development.json
+appsettings.Local.json
+
+# Compilación Visual Studio / .NET MAUI
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Sistema Operativo y temporales
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*.swp
+node_modules/
